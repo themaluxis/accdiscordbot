@@ -11,8 +11,9 @@ type Config struct {
 		AccServerPath string `envconfig:"ACCSERVER_PATH"`
 	}
 	Discord struct {
-		BotToken  string `envconfig:"DISCORD_TOKEN"`
-		ChannelID string `envconfig:"DISCORD_CHANNEL"`
+		BotToken              string `envconfig:"DISCORD_TOKEN"`
+		ChannelID_Chronos     string `envconfig:"DISCORD_CHANNEL_CHRONOS"`
+		ChannelID_Leaderboard string `envconfig:"DISCORD_CHANNEL_LEADERBOARD"`
 	}
 }
 

@@ -49,6 +49,7 @@ func main() {
 	// Boucle pour mettre à jour les messages toutes les 10 minutes
 	for {
 		discord.BestLapMessages(Cfg, dg, groupedBestLaps, carList, trackName, trackImage)
+		discord.TrackLeaderboardMessages(Cfg, dg, groupedBestLaps, carList, trackName, trackImage)
 
 		// Attendre 10 minutes
 		time.Sleep(10 * time.Minute)
