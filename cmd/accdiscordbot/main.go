@@ -20,13 +20,6 @@ func main() {
 	carList := data.GetCarList()
 	trackName := data.GetTrackName()
 	trackImage := data.GetTrackImage()
-	utils.ParcourirDossier(dossier, groupedBestLaps, carList)
-
-	var tracks []string
-	for track := range groupedBestLaps {
-		tracks = append(tracks, track)
-	}
-	sort.Strings(tracks)
 
 	dg, err := discordgo.New("Bot " + Cfg.Discord.BotToken)
 	if err != nil {
@@ -48,6 +41,14 @@ func main() {
 
 	// Boucle pour mettre à jour les messages toutes les 10 minutes
 	for {
+		utils.ParcourirDossier(dossier, groupedBestLaps, carList)
+
+		var tracks []string
+		for track := range groupedBestLaps {
+			tracks = append(tracks, track)
+		}
+		sort.Strings(tracks)
+
 		discord.BestLapMessages(Cfg, dg, groupedBestLaps, carList, trackName, trackImage)
 		discord.TrackLeaderboardMessages(Cfg, dg, groupedBestLaps, carList, trackName, trackImage)
 
