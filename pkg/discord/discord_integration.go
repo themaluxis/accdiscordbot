@@ -137,7 +137,7 @@ func TrackLeaderboardMessages(cfg accdiscordbot.Config, s *discordgo.Session, gr
 			field := &discordgo.MessageEmbedField{
 				Name:   position,
 				Value:  formattedTime,
-				Inline: true,
+				Inline: false,
 			}
 			embedFields = append(embedFields, field)
 		}
@@ -145,7 +145,7 @@ func TrackLeaderboardMessages(cfg accdiscordbot.Config, s *discordgo.Session, gr
 		// Create and send embed
 		embed := &discordgo.MessageEmbed{
 			Title:  fmt.Sprintf("Classement sur %s", trackNameFormatted),
-			Color:  15425844,
+			Color:  3386879,
 			Image:  &discordgo.MessageEmbedImage{URL: trackImageURL},
 			Fields: embedFields,
 		}
