@@ -172,3 +172,98 @@ func TrackLeaderboardMessages(cfg accdiscordbot.Config, s *discordgo.Session, gr
 		}
 	}
 }
+
+func TrackGeneralLeaderboard(cfg accdiscordbot.Config, s *discordgo.Session, groupedBestLaps map[string]map[int][]data.BestLapInfo, carList map[int]string) {
+	// Step 1: Track Best Position Per Track for Each Driver
+	driverBestPositions := make(map[string]map[string]int) // Map: DriverID -> (Track -> Best Position)
+	for track, lapsByCar := range groupedBestLaps {
+		for _, laps := range lapsByCar {
+			sort.SliceStable(laps, func(i, j int) bool {
+				return laps[i].BestLap < laps[j].BestLap
+			})
+			for position, lap := range laps {
+				if position < 5 { // Only consider top 5 positions
+					if driverBestPositions[lap.DriverID] == nil {
+						driverBestPositions[lap.DriverID] = make(map[string]int)
+					}
+					if pos, exists := driverBestPositions[lap.DriverID][track]; !exists || position < pos {
+						driverBestPositions[lap.DriverID][track] = position
+					}
+				}
+			}
+		}
+	}
+
+	// Step 2: Update Points Calculation Logic
+	driverPoints := make(map[string]int)
+	for driverID, trackPositions := range driverBestPositions {
+		for _, position := range trackPositions {
+			switch position {
+			case 0:
+				driverPoints[driverID] += 10
+			case 1:
+				driverPoints[driverID] += 8
+			case 2:
+				driverPoints[driverID] += 6
+			case 3:
+				driverPoints[driverID] += 4
+			case 4:
+				driverPoints[driverID] += 3
+			}
+		}
+	}
+
+	// Step 2: Create General Leaderboard
+	type driverPointsInfo struct {
+		DriverID string
+		Points   int
+	}
+	var leaderboard []driverPointsInfo
+	for driver, points := range driverPoints {
+		leaderboard = append(leaderboard, driverPointsInfo{DriverID: driver, Points: points / 8})
+	}
+	sort.Slice(leaderboard, func(i, j int) bool {
+		return leaderboard[i].Points > leaderboard[j].Points
+	})
+
+	// Step 3: Prepare Embed Message
+	var embedFields []*discordgo.MessageEmbedField
+	for i, driverInfo := range leaderboard {
+		position := fmt.Sprintf("%d. %s", i+1, driverInfo.DriverID)
+		points := fmt.Sprintf("%d points", driverInfo.Points)
+		field := &discordgo.MessageEmbedField{
+			Name:   position,
+			Value:  points,
+			Inline: false,
+		}
+		embedFields = append(embedFields, field)
+	}
+
+	// Step 4: Send Embed Message
+	embed := &discordgo.MessageEmbed{
+		Title:  "Classement général",
+		Color:  3386879, // Example color
+		Fields: embedFields,
+	}
+
+	if msgID, exists := utils.MessageIDs["classement_general"]; exists {
+		msg, err := s.ChannelMessageEditEmbed(cfg.Discord.ChannelID_LeaderboardGeneral, msgID, embed)
+		if err != nil {
+			fmt.Printf("Erreur lors de la mise à jour de l'embed: %s\n", err)
+		} else {
+			fmt.Printf("Mise a jour de l'embed %v\n", msg.ID)
+		}
+	} else {
+		msg, err := s.ChannelMessageSendEmbed(cfg.Discord.ChannelID_LeaderboardGeneral, embed)
+		if err != nil {
+			fmt.Printf("Erreur lors de l'envoi de l'embed: %s\n", err)
+		} else {
+			utils.MessageIDs["classement_general"] = msg.ID
+			fmt.Printf("Embed crée avec l'ID %v\n", msg.ID)
+			err := utils.SaveMessageIDsToFile(utils.MessageIDs, "messageIDs.json")
+			if err != nil {
+				fmt.Printf("Erreur lors de la sauvegarde de l'ID de message dans messageIDs.json")
+			}
+		}
+	}
+}

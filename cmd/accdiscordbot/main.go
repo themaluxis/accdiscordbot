@@ -51,6 +51,7 @@ func main() {
 
 		discord.BestLapMessages(Cfg, dg, groupedBestLaps, carList, trackName, trackImage)
 		discord.TrackLeaderboardMessages(Cfg, dg, groupedBestLaps, carList, trackName, trackImage)
+		discord.TrackGeneralLeaderboard(Cfg, dg, groupedBestLaps, carList)
 
 		// Attendre 10 minutes
 		time.Sleep(10 * time.Minute)
