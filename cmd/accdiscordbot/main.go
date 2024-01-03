@@ -20,6 +20,8 @@ func main() {
 	carList := data.GetCarList()
 	trackName := data.GetTrackName()
 	trackImage := data.GetTrackImage()
+	previousBestLaps := make(map[string]int) // Initialize the map
+	carBestLaps := make(map[string]map[int]int)
 
 	dg, err := discordgo.New("Bot " + Cfg.Discord.BotToken)
 	if err != nil {
@@ -49,7 +51,7 @@ func main() {
 		}
 		sort.Strings(tracks)
 
-		discord.BestLapMessages(Cfg, dg, groupedBestLaps, carList, trackName, trackImage)
+		discord.BestLapMessages(Cfg, dg, groupedBestLaps, carList, trackName, trackImage, previousBestLaps, carBestLaps)
 		discord.TrackLeaderboardMessages(Cfg, dg, groupedBestLaps, carList, trackName, trackImage)
 		discord.TrackGeneralLeaderboard(Cfg, dg, groupedBestLaps, carList)
 

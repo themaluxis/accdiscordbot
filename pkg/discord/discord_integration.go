@@ -10,40 +10,73 @@ import (
 	"github.com/themaluxis/accdiscordbot/pkg/utils"
 )
 
-func BestLapMessages(cfg accdiscordbot.Config, s *discordgo.Session, groupedBestLaps map[string]map[int][]data.BestLapInfo, carList map[int]string, trackName map[string]string, trackImage map[string]string) {
-	var tracks []string
-	for track := range groupedBestLaps {
-		tracks = append(tracks, track)
-	}
-	sort.Strings(tracks)
+func BestLapMessages(cfg accdiscordbot.Config, s *discordgo.Session, groupedBestLaps map[string]map[int][]data.BestLapInfo, carList map[int]string, trackName map[string]string, trackImage map[string]string, previousBestLaps map[string]int, carBestLaps map[string]map[int]int) {
+    var tracks []string
+    for track := range groupedBestLaps {
+        tracks = append(tracks, track)
+    }
+    sort.Strings(tracks)
 
-	for _, track := range tracks {
-		bestLap := int(^uint(0) >> 1) // Initialize with max int value
-		bestDriver := ""
-		for _, laps := range groupedBestLaps[track] {
-			for _, lap := range laps {
-				if lap.BestLap < bestLap {
-					bestLap = lap.BestLap
-					bestDriver = lap.DriverID
-				}
-			}
-		}
+    for _, track := range tracks {
+        bestLap := int(^uint(0) >> 1) // Initialize with max int value
+        bestDriver := ""
+        for _, laps := range groupedBestLaps[track] {
+            for _, lap := range laps {
+                if lap.BestLap < bestLap {
+                    bestLap = lap.BestLap
+                    bestDriver = lap.DriverID
+                }
+            }
+        }
 
-		trackNameFormatted := trackName[track]
-		trackImageURL := trackImage[track]
-		bestLapFormatted := utils.FormatTime(bestLap)
+        trackNameFormatted := trackName[track]
+        trackImageURL := trackImage[track]
+        bestLapFormatted := utils.FormatTime(bestLap)
 
-		embed := &discordgo.MessageEmbed{
-			Title: fmt.Sprintf("Meilleurs temps sur %s", trackNameFormatted),
-			Color: 15425844,
-			Image: &discordgo.MessageEmbedImage{
-				URL: trackImageURL,
-			},
-			Fields: []*discordgo.MessageEmbedField{},
-			Footer: &discordgo.MessageEmbedFooter{
-				Text: fmt.Sprintf("Meilleur tour : %s en %s", bestDriver, bestLapFormatted),
-			},
-		}
+        // Check if the best lap is an improvement
+        if previousBest, exists := previousBestLaps[track]; exists && bestLap < previousBest {
+            newLapMessage := fmt.Sprintf("@everyone | **%s** a amélioré le meilleur temps sur **%s** ! Nouveau temps : **%s**", bestDriver, trackNameFormatted, bestLapFormatted)
+            s.ChannelMessageSend(cfg.Discord.ChannelID_Feed, newLapMessage)
+        }
+        previousBestLaps[track] = bestLap
+
+        for carModel, laps := range groupedBestLaps[track] {
+            carBestLap := int(^uint(0) >> 1)
+            var bestDriverForCar string
+            for _, lap := range laps {
+                if lap.BestLap < carBestLap {
+                    carBestLap = lap.BestLap
+                    bestDriverForCar = lap.DriverID
+                }
+            }
+
+            if carPreviousBestLaps, exists := carBestLaps[track]; exists {
+                if previousBest, ok := carPreviousBestLaps[carModel]; !ok || carBestLap < previousBest {
+                    carBestLapFormatted := utils.FormatTime(carBestLap)
+                    carName := carList[carModel]
+                    newLapMessage := fmt.Sprintf("**%s** a amélioré le meilleur temps pour **%s** sur **%s** ! Nouveau temps : **%s**", bestDriverForCar, carName, trackNameFormatted, carBestLapFormatted)
+                    s.ChannelMessageSend(cfg.Discord.ChannelID_Feed, newLapMessage)
+                }
+            } else {
+                carBestLaps[track] = make(map[int]int)
+            }
+
+            carBestLaps[track][carModel] = carBestLap
+        }
+
+
+        // existing embed creation and updating code...
+        embed := &discordgo.MessageEmbed{
+            Title: fmt.Sprintf("Meilleurs temps sur %s", trackNameFormatted),
+            Color: 15425844,
+            Image: &discordgo.MessageEmbedImage{
+                URL: trackImageURL,
+            },
+            Fields: []*discordgo.MessageEmbedField{},
+            Footer: &discordgo.MessageEmbedFooter{
+                Text: fmt.Sprintf("Meilleur tour : %s en %s", bestDriver, bestLapFormatted),
+            },
+        }
 
 		carFields := []*discordgo.MessageEmbedField{}
 		carCount := 0

@@ -15,6 +15,7 @@ type Config struct {
 		ChannelID_Chronos            string `envconfig:"DISCORD_CHANNEL_CHRONOS"`
 		ChannelID_Leaderboard        string `envconfig:"DISCORD_CHANNEL_LEADERBOARD"`
 		ChannelID_LeaderboardGeneral string `envconfig:"DISCORD_CHANNEL_LEADERBOARD_GENERAL"`
+		ChannelID_Feed 				 string `envconfig:"DISCORD_CHANNEL_FEED"`
 	}
 }
 
