@@ -31,14 +31,15 @@ func GetTrackName() map[string]string {
 }
 
 var trackImage = map[string]string{
-	"kyalami":        "https://www.carmag.co.za/wp-content/uploads/2023/02/FM-1-jpg.webp",
-	"mount_panorama": "https://www.bathurst.nsw.gov.au/files/oc-templates/00000000-0000-0000-0000-000000000000/95d1acf0-3fb4-45d7-9991-a0a7dd537984/v/89/background-image-min.jpg",
-	"oulton_park":    "https://www.endurance-info.com/sites/default/files/2021-09/British%20GT%20Race%201%20Sunday%2012%2009%2021%200013.jpg",
-	"spa":            "https://www.fia.com/sites/default/files/styles/content_details/public/news/main_image/spa.jpeg",
-	"suzuka":         "https://asset.japan.travel/image/upload/v1678260718/mie/M_00241_002.jpg",
-	"watkins_glen":   "https://www.macny.org/wp-content/uploads/2019/05/WatkinsGlen.png",
-	"zandvoort":      "https://www.autohebdo.fr/app/uploads/2021/06/wri2_00005324-002-753x494.jpg",
-	"zolder":         "https://www.moto80.be/app/uploads/2021/12/18081_big.jpg",
+	"kyalami":      "https://www.carmag.co.za/wp-content/uploads/2023/02/FM-1-jpg.webp",
+	"imola":        "https://static.bolognawelcome.com/immagini/68/69/7d/6a/20220518143654_landscape_16_9_mobile.jpg",
+	"nurburgring":  "https://hips.hearstapps.com/hmg-prod/images/dsc01990-jpg-1656431148-64501d0e8ef7b.jpeg",
+	"spa":          "https://www.fia.com/sites/default/files/styles/content_details/public/news/main_image/spa.jpeg",
+	"misano":       "https://www.roadracingworld.com/wp-content/uploads/2023/05/43b3d773-bb4a-019b-075d-d4f516cf0341_1685124075.jpg",
+	"watkins_glen": "https://www.macny.org/wp-content/uploads/2019/05/WatkinsGlen.png",
+	"paul_ricard":  "https://www.lamborghini.com/sites/it-en/files/DAM/lamborghini/facelift_2019/motorsport/circuits/EUROPE/valencia/2023/paul_d.jpg",
+	"barcelona":    "https://coachdaveacademy.com/wp-content/uploads/2023/07/blog-image-barcat1112-1024x576.jpg",
+	"laguna_seca":  "https://www.montereyherald.com/wp-content/uploads/2019/12/CM5_0542.jpg",
 }
 
 func GetTrackImage() map[string]string {

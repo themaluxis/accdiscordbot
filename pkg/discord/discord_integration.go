@@ -11,72 +11,71 @@ import (
 )
 
 func BestLapMessages(cfg accdiscordbot.Config, s *discordgo.Session, groupedBestLaps map[string]map[int][]data.BestLapInfo, carList map[int]string, trackName map[string]string, trackImage map[string]string, previousBestLaps map[string]int, carBestLaps map[string]map[int]int) {
-    var tracks []string
-    for track := range groupedBestLaps {
-        tracks = append(tracks, track)
-    }
-    sort.Strings(tracks)
+	var tracks []string
+	for track := range groupedBestLaps {
+		tracks = append(tracks, track)
+	}
+	sort.Strings(tracks)
 
-    for _, track := range tracks {
-        bestLap := int(^uint(0) >> 1) // Initialize with max int value
-        bestDriver := ""
-        for _, laps := range groupedBestLaps[track] {
-            for _, lap := range laps {
-                if lap.BestLap < bestLap {
-                    bestLap = lap.BestLap
-                    bestDriver = lap.DriverID
-                }
-            }
-        }
+	for _, track := range tracks {
+		bestLap := int(^uint(0) >> 1) // Initialize with max int value
+		bestDriver := ""
+		for _, laps := range groupedBestLaps[track] {
+			for _, lap := range laps {
+				if lap.BestLap < bestLap {
+					bestLap = lap.BestLap
+					bestDriver = lap.DriverID
+				}
+			}
+		}
 
-        trackNameFormatted := trackName[track]
-        trackImageURL := trackImage[track]
-        bestLapFormatted := utils.FormatTime(bestLap)
+		trackNameFormatted := trackName[track]
+		trackImageURL := trackImage[track]
+		bestLapFormatted := utils.FormatTime(bestLap)
 
-        // Check if the best lap is an improvement
-        if previousBest, exists := previousBestLaps[track]; exists && bestLap < previousBest {
-            newLapMessage := fmt.Sprintf("@everyone | **%s** a amélioré le meilleur temps sur **%s** ! Nouveau temps : **%s**", bestDriver, trackNameFormatted, bestLapFormatted)
-            s.ChannelMessageSend(cfg.Discord.ChannelID_Feed, newLapMessage)
-        }
-        previousBestLaps[track] = bestLap
+		// Check if the best lap is an improvement
+		if previousBest, exists := previousBestLaps[track]; exists && bestLap < previousBest {
+			newLapMessage := fmt.Sprintf("@everyone | **%s** a amélioré le meilleur temps sur **%s** ! Nouveau temps : **%s**", bestDriver, trackNameFormatted, bestLapFormatted)
+			s.ChannelMessageSend(cfg.Discord.ChannelID_Feed, newLapMessage)
+		}
+		previousBestLaps[track] = bestLap
 
-        for carModel, laps := range groupedBestLaps[track] {
-            carBestLap := int(^uint(0) >> 1)
-            var bestDriverForCar string
-            for _, lap := range laps {
-                if lap.BestLap < carBestLap {
-                    carBestLap = lap.BestLap
-                    bestDriverForCar = lap.DriverID
-                }
-            }
+		for carModel, laps := range groupedBestLaps[track] {
+			carBestLap := int(^uint(0) >> 1)
+			var bestDriverForCar string
+			for _, lap := range laps {
+				if lap.BestLap < carBestLap {
+					carBestLap = lap.BestLap
+					bestDriverForCar = lap.DriverID
+				}
+			}
 
-            if carPreviousBestLaps, exists := carBestLaps[track]; exists {
-                if previousBest, ok := carPreviousBestLaps[carModel]; !ok || carBestLap < previousBest {
-                    carBestLapFormatted := utils.FormatTime(carBestLap)
-                    carName := carList[carModel]
-                    newLapMessage := fmt.Sprintf("**%s** a amélioré le meilleur temps pour **%s** sur **%s** ! Nouveau temps : **%s**", bestDriverForCar, carName, trackNameFormatted, carBestLapFormatted)
-                    s.ChannelMessageSend(cfg.Discord.ChannelID_Feed, newLapMessage)
-                }
-            } else {
-                carBestLaps[track] = make(map[int]int)
-            }
+			if carPreviousBestLaps, exists := carBestLaps[track]; exists {
+				if previousBest, ok := carPreviousBestLaps[carModel]; !ok || carBestLap < previousBest {
+					carBestLapFormatted := utils.FormatTime(carBestLap)
+					carName := carList[carModel]
+					newLapMessage := fmt.Sprintf("**%s** a amélioré le meilleur temps pour **%s** sur **%s** ! Nouveau temps : **%s**", bestDriverForCar, carName, trackNameFormatted, carBestLapFormatted)
+					s.ChannelMessageSend(cfg.Discord.ChannelID_Feed, newLapMessage)
+				}
+			} else {
+				carBestLaps[track] = make(map[int]int)
+			}
 
-            carBestLaps[track][carModel] = carBestLap
-        }
+			carBestLaps[track][carModel] = carBestLap
+		}
 
-
-        // existing embed creation and updating code...
-        embed := &discordgo.MessageEmbed{
-            Title: fmt.Sprintf("Meilleurs temps sur %s", trackNameFormatted),
-            Color: 15425844,
-            Image: &discordgo.MessageEmbedImage{
-                URL: trackImageURL,
-            },
-            Fields: []*discordgo.MessageEmbedField{},
-            Footer: &discordgo.MessageEmbedFooter{
-                Text: fmt.Sprintf("Meilleur tour : %s en %s", bestDriver, bestLapFormatted),
-            },
-        }
+		// existing embed creation and updating code...
+		embed := &discordgo.MessageEmbed{
+			Title: fmt.Sprintf("Meilleurs temps sur %s", trackNameFormatted),
+			Color: 15425844,
+			Image: &discordgo.MessageEmbedImage{
+				URL: trackImageURL,
+			},
+			Fields: []*discordgo.MessageEmbedField{},
+			Footer: &discordgo.MessageEmbedFooter{
+				Text: fmt.Sprintf("Meilleur tour : %s en %s", bestDriver, bestLapFormatted),
+			},
+		}
 
 		carFields := []*discordgo.MessageEmbedField{}
 		carCount := 0
@@ -105,24 +104,22 @@ func BestLapMessages(cfg accdiscordbot.Config, s *discordgo.Session, groupedBest
 
 		// Add carFields to the embed.Fields
 		embed.Fields = append(embed.Fields, carFields...)
+		fmt.Printf("Tentative d'envoi de l'embed dans le canal : %s\n", cfg.Discord.ChannelID_Chronos)
 		if msgID, exists := utils.MessageIDs[track]; exists {
+			fmt.Printf("Tentative de modification du message avec ID : %s\n", msgID)
 			msg, err := s.ChannelMessageEditEmbed(cfg.Discord.ChannelID_Chronos, msgID, embed)
 			if err != nil {
-				fmt.Printf("Erreur lors de la mise à jour de l'embed: %s\n", err)
+				fmt.Printf("Erreur lors de la mise à jour de l'embed. Canal : %s, Message ID : %s, Erreur : %s\n", cfg.Discord.ChannelID_Chronos, msgID, err)
 			} else {
-				fmt.Printf("Mise a jour de l'embed %v\n", msg.ID)
+				fmt.Printf("Message mis à jour avec succès. Nouvel ID de message : %v\n", msg.ID)
 			}
 		} else {
-			msg, err := s.ChannelMessageEditEmbed(cfg.Discord.ChannelID_Chronos, msgID, embed)
+			msg, err := s.ChannelMessageSendEmbed(cfg.Discord.ChannelID_Chronos, embed)
+			utils.MessageIDs[track] = msg.ID
 			if err != nil {
-				fmt.Printf("Erreur lors de l'envoi de l'embed: %s\n", err)
+				fmt.Printf("Erreur lors de l'envoi de l'embed. Canal : %s, Erreur : %s\n", cfg.Discord.ChannelID_Chronos, err)
 			} else {
-				utils.MessageIDs[track] = msg.ID
-				fmt.Printf("Embed crée avec l'ID %v\n", msg.ID)
-				err := utils.SaveMessageIDsToFile(utils.MessageIDs, "messageIDs.json")
-				if err != nil {
-					fmt.Printf("Erreur lors de la sauvegarde de l'ID de message dans messageIDs.json")
-				}
+				fmt.Printf("Embed envoyé avec succès. ID de message : %v\n", msg.ID)
 			}
 		}
 	}
@@ -186,14 +183,14 @@ func TrackLeaderboardMessages(cfg accdiscordbot.Config, s *discordgo.Session, gr
 		if msgID, exists := utils.MessageIDs["classement_"+track]; exists {
 			msg, err := s.ChannelMessageEditEmbed(cfg.Discord.ChannelID_Leaderboard, msgID, embed)
 			if err != nil {
-				fmt.Printf("Erreur lors de la mise à jour de l'embed: %s\n", err)
+				fmt.Printf("Erreur lors de la mise à jour de l'embed (Classement : %s): %s\n", cfg.Discord.ChannelID_Leaderboard, err)
 			} else {
 				fmt.Printf("Mise a jour de l'embed %v\n", msg.ID)
 			}
 		} else {
 			msg, err := s.ChannelMessageSendEmbed(cfg.Discord.ChannelID_Leaderboard, embed)
 			if err != nil {
-				fmt.Printf("Erreur lors de l'envoi de l'embed: %s\n", err)
+				fmt.Printf("Erreur lors de l'envoi de l'embed (Classement : %s): %s\n", cfg.Discord.ChannelID_Leaderboard, err)
 			} else {
 				utils.MessageIDs["classement_"+track] = msg.ID
 				fmt.Printf("Embed crée avec l'ID %v\n", msg.ID)
@@ -282,14 +279,14 @@ func TrackGeneralLeaderboard(cfg accdiscordbot.Config, s *discordgo.Session, gro
 	if msgID, exists := utils.MessageIDs["classement_general"]; exists {
 		msg, err := s.ChannelMessageEditEmbed(cfg.Discord.ChannelID_LeaderboardGeneral, msgID, embed)
 		if err != nil {
-			fmt.Printf("Erreur lors de la mise à jour de l'embed: %s\n", err)
+			fmt.Printf("Erreur lors de la mise à jour de l'embed (General : %s): %s\n", cfg.Discord.ChannelID_LeaderboardGeneral, err)
 		} else {
 			fmt.Printf("Mise a jour de l'embed %v\n", msg.ID)
 		}
 	} else {
 		msg, err := s.ChannelMessageSendEmbed(cfg.Discord.ChannelID_LeaderboardGeneral, embed)
 		if err != nil {
-			fmt.Printf("Erreur lors de l'envoi de l'embed: %s\n", err)
+			fmt.Printf("Erreur lors de l'envoi de l'embed (General : %s): %s\n", cfg.Discord.ChannelID_LeaderboardGeneral, err)
 		} else {
 			utils.MessageIDs["classement_general"] = msg.ID
 			fmt.Printf("Embed crée avec l'ID %v\n", msg.ID)
